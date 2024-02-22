@@ -1,21 +1,16 @@
 import random
 import time
+from dataclasses import dataclass
 from tkinter import Canvas, Tk
 from typing import Optional
 
 
-class Point:
-    def __init__(self, x: int = 0, y: int = 0) -> None:
-        self.x = x
-        self.y = y
-
-
+@dataclass
 class Line:
-    def __init__(self, x1: int, y1: int, x2: int, y2: int) -> None:
-        self.x1 = x1
-        self.x2 = x2
-        self.y1 = y1
-        self.y2 = y2
+    x1: int
+    y1: int
+    x2: int
+    y2: int
 
     def draw(self, canvas: Canvas, fill_color: str) -> None:
         canvas.create_line(self.x1, self.y1, self.x2, self.y2, fill=fill_color, width=2)
@@ -48,52 +43,38 @@ class Window:
         line.draw(self.canvas, fill_color)
 
 
+@dataclass
 class Cell:
-    def __init__(
-        self, top_x: int, top_y: int, bottom_x: int, bottom_y: int, window: Window
-    ) -> None:
-        self.top_x = top_x
-        self.top_y = top_y
-        self.bottom_x = bottom_x
-        self.bottom_y = bottom_y
-        self.has_left_wall = True
-        self.has_right_wall = True
-        self.has_top_wall = True
-        self.has_bottom_wall = True
-        self.win = window
-        self.visited = False
+    top_x: int
+    top_y: int
+    bottom_x: int
+    bottom_y: int
+    win: Window
+    has_left_wall: bool = True
+    has_right_wall: bool = True
+    has_top_wall: bool = True
+    has_bottom_wall: bool = True
+    visited: bool = False
 
-    def draw(self, fill_color: str):
+    def draw(self, color: str = "black"):
+        bg = "#d9d9d9"
+        # left
         line = Line(self.top_x, self.top_y, self.top_x, self.bottom_y)
-        if self.has_left_wall:
-            line.draw(self.win.canvas, fill_color)
-        else:
-            line.draw(self.win.canvas, "#d9d9d9")
+        line.draw(self.win.canvas, fill_color=color if self.has_left_wall else bg)
 
+        # right
         line = Line(self.bottom_x, self.top_y, self.bottom_x, self.bottom_y)
-        if self.has_right_wall:
-            line.draw(self.win.canvas, fill_color)
-        else:
-            line.draw(self.win.canvas, "#d9d9d9")
+        line.draw(self.win.canvas, fill_color=color if self.has_right_wall else bg)
 
+        # top
         line = Line(self.top_x, self.top_y, self.bottom_x, self.top_y)
-        if self.has_top_wall:
-            line.draw(self.win.canvas, fill_color)
-        else:
-            line.draw(self.win.canvas, "#d9d9d9")
+        line.draw(self.win.canvas, fill_color=color if self.has_top_wall else bg)
 
+        # bottom
         line = Line(self.top_x, self.bottom_y, self.bottom_x, self.bottom_y)
-        if self.has_bottom_wall:
-            line.draw(self.win.canvas, fill_color)
-        else:
-            line.draw(self.win.canvas, "#d9d9d9")
+        line.draw(self.win.canvas, fill_color=color if self.has_bottom_wall else bg)
 
     def draw_move(self, to_cell, undo=False):
-        if undo:
-            fill_color = "gray"
-        else:
-            fill_color = "red"
-
         this_x = (self.bottom_x + self.top_x) // 2
         this_y = (self.bottom_y + self.top_y) // 2
         other_x = (to_cell.bottom_x + to_cell.top_x) // 2
@@ -102,26 +83,18 @@ class Cell:
         line.draw(self.win.canvas, fill_color="gray" if undo else "red")
 
 
+@dataclass
 class Maze:
-    def __init__(
-        self,
-        x1: int,
-        y1: int,
-        num_rows: int,
-        num_cols: int,
-        cell_size_x: int,
-        cell_size_y: int,
-        win: Window,
-        seed: Optional[int] = None,
-    ) -> None:
-        self.x1 = x1
-        self.y1 = y1
-        self.num_rows = num_rows
-        self.num_cols = num_cols
-        self.cell_size_x = cell_size_x
-        self.cell_size_y = cell_size_y
-        self.win = win
-        self.seed = random.seed(seed) if seed is not None else None
+    x1: int
+    y1: int
+    num_rows: int
+    num_cols: int
+    cell_size_x: int
+    cell_size_y: int
+    win: Window
+    seed: Optional[int] = None
+
+    def __post_init__(self):
         self._create_cells()
 
     def _create_cells(self):
@@ -146,7 +119,7 @@ class Maze:
         self._reset_cells_visited()
 
     def _draw_cell(self, i, j):
-        self._cells[i][j].draw("black")
+        self._cells[i][j].draw()
         self._animate()
 
     def _animate(self):
