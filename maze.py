@@ -91,11 +91,17 @@ class Maze:
     num_cols: int
     cell_size_x: int
     cell_size_y: int
-    win: Window
+    win: Optional[Window] = None  # None only used for tests
     seed: Optional[int] = None
 
     def __post_init__(self):
         self._create_cells()
+
+        # create maze by breaking walls
+        if self.win is not None:
+            self._break_entrance_and_exit()
+            self._break_walls_r(0, 0)
+            self._reset_cells_visited()
 
     def _create_cells(self):
         self._cells = []
@@ -112,11 +118,6 @@ class Maze:
                 this_row.append(cell)
 
             self._cells.append(this_row)
-
-        # create maze by breaking walls
-        self._break_entrance_and_exit()
-        self._break_walls_r(0, 0)
-        self._reset_cells_visited()
 
     def _draw_cell(self, i, j):
         self._cells[i][j].draw()
@@ -176,9 +177,9 @@ class Maze:
                 self._cells[i][j].visited = False
 
     def solve(self) -> bool:
-        return self.solve_r(0, 0)
+        return self._solve_r(0, 0)
 
-    def solve_r(self, i, j) -> bool:
+    def _solve_r(self, i, j) -> bool:
         self._animate()
         this_cell = self._cells[i][j]
         this_cell.visited = True
@@ -202,7 +203,7 @@ class Maze:
             if not next_cell.visited:
                 if not wall:
                     this_cell.draw_move(next_cell)
-                    if not self.solve_r(test_i, test_j):
+                    if not self._solve_r(test_i, test_j):
                         this_cell.draw_move(next_cell, undo=True)
                     else:
                         return True
