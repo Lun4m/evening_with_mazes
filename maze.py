@@ -85,8 +85,8 @@ class Cell:
 
 @dataclass
 class Maze:
-    x1: int
-    y1: int
+    x: int
+    y: int
     num_rows: int
     num_cols: int
     cell_size_x: int
@@ -100,13 +100,13 @@ class Maze:
     def _create_cells(self):
         self._cells = []
         for i in range(self.num_rows):
-            top_y = self.y1 + i * self.cell_size_y
-            bottom_y = self.y1 + (i + 1) * self.cell_size_y
+            top_y = self.y + i * self.cell_size_y
+            bottom_y = self.y + (i + 1) * self.cell_size_y
 
             this_row = []
             for j in range(self.num_cols):
-                top_x = self.x1 + j * self.cell_size_x
-                bottom_x = self.x1 + (j + 1) * self.cell_size_x
+                top_x = self.x + j * self.cell_size_x
+                bottom_x = self.x + (j + 1) * self.cell_size_x
 
                 cell = Cell(top_x, top_y, bottom_x, bottom_y, self.win)
                 this_row.append(cell)
